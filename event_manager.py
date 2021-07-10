@@ -46,8 +46,6 @@ class Reactor:
 
     def activate_functions(self):
         """Loop throght all events and call them if thier signal is on. Runs every frame."""
-        #keys = pg.key.get_pressed()
-        #active events handlers
         for pg_event in pg.event.get():
             for reactor_event in self._event_fd.get(pg_event.type,[]):
                 if reactor_event.key == getattr(pg_event,reactor_event.attribute):
