@@ -35,12 +35,10 @@ class Sprite_manager:
         self.alive_sprites = pg.sprite.Group()
         self.all_sprites = pg.sprite.Group()
 
-        self.cursor = Cursor(None, pg.mouse.get_pos()[0], pg.mouse.get_pos()[1], 8, 8,
-                             SOME_RANDOM_VALUE, "tree.png")
-
 
             #reactor.add_mouse_event(pg.MOUSEBUTTONUP, 1, "button", self.get_agents_in_area,Mouse.CLICK_STATE)
-        self.create_gather_man(150,150)
+
+        reactor.add_event_function(pg.MOUSEBUTTONDOWN, 1, "button", self.sprite_click)
         reactor.add_mouse_event(pg.MOUSEBUTTONUP, 1, "button", self.select_agents)
         reactor.add_mouse_event(pg.MOUSEBUTTONDOWN, 1, "button", self.active_agents)
 
@@ -59,26 +57,25 @@ class Sprite_manager:
                         map.change_map(round(x/TILE_SIZE),round(y/TILE_SIZE), STONE_SIZE,'5')
 
     def sprite_click(self):
-        for clickable_group in [self.agents,self.clickable_sprites]:
-            for clickable_sprite in clickable_group:
-                if utilities.on_object(((pg.mouse.get_pos()[0] - camera.camera.x) / camera.tile_size, (pg.mouse.get_pos()[1] - camera.camera.y) / camera.tile_size),
-                                       (clickable_sprite.rect.x / camera.tile_size,clickable_sprite.rect.y / camera.tile_size),
-                                       (clickable_sprite.rect.x / camera.tile_size + clickable_sprite.image.get_width() ,(clickable_sprite.rect.y / camera.tile_size + clickable_sprite.image.get_height()))):
-                    # check what type of clickable it is
-                    clickable_sprite.on_click(camera)
-                    break
+        for clickable_sprite in self.clickable_sprites:
+            if utilities.on_object(((pg.mouse.get_pos()[0] - cam_values.x) / cam_values.tile_size, (pg.mouse.get_pos()[1] - cam_values.y) / cam_values.tile_size),
+                                    (clickable_sprite.rect.x / cam_values.tile_size,clickable_sprite.rect.y / cam_values.tile_size),
+                                    (clickable_sprite.rect.x / cam_values.tile_size + clickable_sprite.image.get_width() ,(clickable_sprite.rect.y / cam_values.tile_size + clickable_sprite.image.get_height()))):
+                # check what type of clickable it is
+                clickable_sprite.on_click()
+                break
 
     def start(self):
         self.inillizing_first_sprites()
 
-
-
     def create_ArmyHouse(self,create_ui_menu, x, y):
         army_house = _ArmyHouse(self.all_sprites, x, y, ARMY_HOUSE_SIZE[0], ARMY_HOUSE_SIZE[1], ARMYHOUSE, self.create_army_man ,create_ui_menu, "tower2.png")
+        self.clickable_sprites.append(army_house)
         return army_house
 
     def create_GatherHouse(self,create_ui_menu,x,y):
         gather_house = _GatherHouse(self.all_sprites, x, y, GATHER_HOUSE_SIZE[0],GATHER_HOUSE_SIZE[1], GATHERHOUSE, self.create_gather_man, create_ui_menu,"tower.jpg")
+        self.clickable_sprites.append(gather_house)
         return gather_house
 
     def create_Tree(self, x, y):
@@ -92,9 +89,13 @@ class Sprite_manager:
         return stone
 
     def create_gather_man(self,x,y):
-        self.agents.append(_Gather_man([self.all_sprites,self.alive_sprites], x + random.randint(0, GATHER_HOUSE_SIZE[0] / 2),
-                    y + GATHER_HOUSE_SIZE[1]
-                    , 8, 8, GATHER_MAN, image_name="gather_man.png"))
+        gather_man = _Gather_man([self.all_sprites,self.alive_sprites], x + random.randint(0, GATHER_HOUSE_SIZE[0] / 2),
+                    y
+                    , 8, 8, GATHER_MAN, image_name="gather_man.png")
+
+        self.agents.append(gather_man)
+        self.clickable_sprites.append(gather_man)
+
 
     def create_army_man(self):
         pass
@@ -109,7 +110,6 @@ class Sprite_manager:
 
     def update_sprites(self, delta_time):
         self.alive_sprites.update(delta_time)
-        self.cursor.update()
 
 
     def get_agents_in_area(self,start_pos,end_pos):
@@ -149,18 +149,6 @@ class BasicObject(pg.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.sprite_type = object_type
-
-
-SOME_RANDOM_VALUE = 101
-
-
-class Cursor(BasicObject):
-    def __init__(self, groups, x, y, x_size, y_size, object_type, image_name=None):
-        super().__init__(groups, x, y, x_size, y_size, object_type, image_name)
-
-    def update(self):
-        self.rect.x = pg.mouse.get_pos()[0]
-        self.rect.y = pg.mouse.get_pos()[1]
 
 
 
@@ -210,7 +198,7 @@ class __ClickAbleSprite(__Sprite):
     def __init__(self, groups, x, y, x_size, y_size, object_type, image_name=None):
         super().__init__(groups, x, y, x_size, y_size, object_type, image_name)
 
-    def on_click(self,camera):
+    def on_click(self):
         pass
 
 
@@ -278,8 +266,8 @@ class _GatherHouse(__Creators):
         #self.menu = create_ui_menu(x+self.image.get_size()[0],y)
         #self.menu.add_button(WHITE,100,50,"gather man",BLACK,self.create_man)
 
-    def on_click(self, camera):
-        pass
+    def on_click(self):
+
         """
         if self.menu.show:
             self.menu.show = False
@@ -297,7 +285,7 @@ class _ArmyHouse(__ClickAbleSprite):
         super().__init__(groups, x, y, x_size, y_size, object_type, creation_function,image_name)
      #   create_ui_menu(x,y)
 
-    def on_click(self,camera):
+    def on_click(self):
         # create solider
         _Solider(self.groups, self.current_x + random.randint(0, ARMY_HOUSE_SIZE[0] / 2),
                                             self.current_y + ARMY_HOUSE_SIZE[1]

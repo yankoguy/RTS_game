@@ -10,6 +10,7 @@ from Mouse_manager import Mouse
 
 BOUTTON = 10
 
+SOME_RANDOM_VALUE = 101
 
 class GameWorld:
     """Controls UI , sprites, map and mouse (maybe i will change the mouse). His job is to draw everything to the screen"""
@@ -32,12 +33,11 @@ class GameWorld:
 
         self.sprite_manager.add_resources(self._map)
 
-        self.UI_manager = UI_manager(reactor, self.create_building_sprite, self.sprite_manager.create_GatherHouse)
+        self.UI_manager = UI_manager(reactor, self.create_building_sprite)
 
         # reactor.add_mouse_event(pg.MOUSEBUTTONDOWN, 1, "button", self.get_type_of_surface,Mouse.CLICK_STATE,pg.mouse.get_pos()[0],pg.mouse.get_pos()[1])
         # reactor.add_event_function(pg.MOUSEBUTTONDOWN, 1, "button", self.get_type_of_surface,pg.mouse.get_pos()[0],pg.mouse.get_pos()[1])
 
-        reactor.add_mouse_event(pg.MOUSEBUTTONDOWN, 1, "button", self.get_type_of_surface)
 
     def create_building_sprite(self, ui_menu_func, building_number=1):
         """create a static sprite on the map"""
@@ -45,15 +45,16 @@ class GameWorld:
         y = int((pg.mouse.get_pos()[1] - cam_values.y) / (cam_values.tile_size * TILE_SIZE))
 
         if building_number == 1:
-            if self.can_build(x, y, GATHER_HOUSE_SIZE):
+            if self._can_build(x, y, GATHER_HOUSE_SIZE):
                 self.sprite_manager.create_GatherHouse(ui_menu_func, round(x) * TILE_SIZE, round(y) * TILE_SIZE)
                 self._map.change_map(x, y, GATHER_HOUSE_SIZE, '?')
         elif building_number == 2:
-            if self.can_build(x, y, ARMY_HOUSE_SIZE):
+            if self._can_build(x, y, ARMY_HOUSE_SIZE):
                 self.sprite_manager.create_ArmyHouse(ui_menu_func, round(x) * TILE_SIZE, round(y) * TILE_SIZE)
                 self._map.change_map(x, y, ARMY_HOUSE_SIZE, '?')
 
-    def can_build(self, x_build_pos, y_build_pos, obj_size):
+
+    def _can_build(self, x_build_pos, y_build_pos, obj_size):
         """Check if building can build and will not be built on something else"""
         for y in range(int(obj_size[1] / TILE_SIZE) + 1):
             for x in range(int(obj_size[0] / TILE_SIZE) + 1):
@@ -63,9 +64,6 @@ class GameWorld:
 
     def get_type_of_surface(self, x, y):
         """get the type of the surface the mouse is currently on"""
-        x = int(x/TILE_SIZE)
-        y = int(y/TILE_SIZE)
-
         # it wont work well if the map size isn't like the map.txt file size (width and height)
         if x < 0 or x > MAP_WIDTH or y < 0 or y > MAP_HEIGHT:
             return GameWorld.OUT
@@ -105,15 +103,17 @@ class UI_manager:
         self.create_in_game_canvas()
 
 
+        self.cursor = Cursor(None, pg.mouse.get_pos()[0], pg.mouse.get_pos()[1], 8, 8,
+                             SOME_RANDOM_VALUE, reactor,"tree.png")
+
 
         #   self.create_menu()
 
-        self.create_GatherHouse_ui(reactor, create_building_func)
+        self.create_GatherHouse_ui(reactor, create_building_func,self.cursor.change_cursor_image)
 
         self.current_scene = self.canvases[OPENING_SCENE]
         reactor.add_event_function(pg.MOUSEBUTTONDOWN, 1, "button", self.ui_click)
 
-        self._temp = False
 
     def get_shown_menus(self):
         menu_entities = []
@@ -178,18 +178,13 @@ class UI_manager:
         self.canvases.insert(menu_scene.canvas_id,menu_scene)
     """
 
-    def create_GatherHouse_ui(self, reactor, create_GatherHouse_func):
+    def create_GatherHouse_ui(self, reactor, create_GatherHouse_func,change_cursor_func):
         # the create function is the function in the grafic manager
 
         _Button(self.canvases[IN_GAME_SCENE], 250, 600, LIGHTGREY, 300, 100, self.font, "Build GatherHouse", WHITE,
-                lambda: print("x"))
+                [lambda : change_cursor_func("tower.jpg",GATHER_HOUSE_SIZE[0],GATHER_HOUSE_SIZE[1]),
+                 lambda: reactor.add_event_function(pg.MOUSEBUTTONDOWN, 1, "button", create_GatherHouse_func,None,1,one_time=True)])
 
-        """
-            lambda: mouse.ui_drag_effect(reactor, "tower.jpg", GATHER_HOUSE_SIZE, pg.MOUSEBUTTONDOWN,
-                                                 LEFT_CLICK, "button", create_GatherHouse_func,
-                                                 self.create_clickableobject_menu_ui
-                                                 , GATHEHOUSE_TYPE, one_time=True)))
-        """
 
     def replace_scene(self, state=0):
         self.current_scene = self.canvases[state]
@@ -200,16 +195,39 @@ class UI_manager:
             self.in_scene = False
 
 
+class Cursor(BasicObject):
+    def __init__(self, groups, x, y, x_size, y_size, object_type, reactor,image_name=None):
+        super().__init__(groups, x, y, x_size, y_size, object_type, image_name)
+        reactor.add_event_function(pg.MOUSEBUTTONDOWN, 1, "button",self.clear_image)
+
+    def update(self):
+        self.rect.x = pg.mouse.get_pos()[0]
+        self.rect.y = pg.mouse.get_pos()[1]
+
+    def change_cursor_image(self,new_image,x_size,y_size):
+        self.image = pg.image.load(new_image).convert_alpha()
+        self.image = pg.transform.scale(self.image, (x_size, y_size))
+
+    def clear_image(self):
+        self.image.fill(NO_COLOR)
+
+
+
 class _Button(BasicObject):
-    def __init__(self, scene, x, y, bg_color, x_size, y_size, font, text, text_color, function_to_activate):
+    def __init__(self, scene, x, y, bg_color, x_size, y_size, font, text, text_color, functions_to_activate):
         super().__init__(scene, x, y, x_size, y_size, BOUTTON, image_name=None, bg_color=bg_color)
-        self.function_to_activate = function_to_activate
+        self.functions_to_activate = functions_to_activate
 
         self.text = font.render(text, 1, text_color)
         self.image.blit(self.text, (0, 0))
 
+        if type(functions_to_activate) != list:
+            #if only one function was passed change it to list
+            self.functions_to_activate = [functions_to_activate]
+
     def on_click(self):
-        self.function_to_activate()
+        for func in self.functions_to_activate:
+            func()
 
 
 """

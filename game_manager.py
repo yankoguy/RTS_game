@@ -79,7 +79,7 @@ class Manager:
         self.renderer.render_objects(self.grafics_manager.sprite_manager.all_sprites)
         self.renderer.render_objects(self.grafics_manager.UI_manager.current_scene,1)
         self.renderer.render_objects(self.grafics_manager.UI_manager.get_shown_menus(),1)
-        self.renderer.render_objects([self.grafics_manager.sprite_manager.cursor],2)
+        self.renderer.render_objects([self.grafics_manager.UI_manager.cursor],2)
 
         self.renderer.draw_square(self.my_mouse.start_selcet_area,self.my_mouse.end_selcet_area)
         pg.display.update()
@@ -95,6 +95,7 @@ class Manager:
 
         self.renderer.camera.camera_update(self._game_clock.delta_time)
         self.grafics_manager.sprite_manager.update_sprites(self._game_clock.delta_time)
+        self.grafics_manager.UI_manager.cursor.update()
         self.my_mouse.update()
 
       #  self.grafics_manager.draw_lines()

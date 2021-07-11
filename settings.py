@@ -24,6 +24,7 @@ YELLOW = (255, 255, 0)
 BLUE = (0,0,200)
 DARK_BLUE = (10,10,100)
 BROWN = (80,50,0)
+NO_COLOR = (0,0,0,0)
 # game settings
 SCREEN_WIDTH = 1600   # 16 * 64 or 32 * 32 or 64 * 16
 SCREEN_HEIGHT = 1000  # 16 * 48 or 32 * 24 or 64 * 12
