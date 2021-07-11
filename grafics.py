@@ -14,13 +14,7 @@ SOME_RANDOM_VALUE = 101
 
 class GameWorld:
     """Controls UI , sprites, map and mouse (maybe i will change the mouse). His job is to draw everything to the screen"""
-    GROUND = 0
-    WATER = 1
-    UI = 2
-    OBJECT = 3
-    TREE = 4
-    STONE = 5
-    OUT = 100
+
 
     def __init__(self, reactor):
         self._map = None
@@ -29,7 +23,8 @@ class GameWorld:
         self.UI_manager = None
         self.load_data()
 
-        self.sprite_manager = Sprite_manager(self._map.tile_map_data, reactor)
+        self.sprite_manager = Sprite_manager(self._map.tile_map_data, reactor,
+                                             self._map.get_nearest_tile)
 
         self.sprite_manager.add_resources(self._map)
 
@@ -58,7 +53,7 @@ class GameWorld:
         """Check if building can build and will not be built on something else"""
         for y in range(int(obj_size[1] / TILE_SIZE) + 1):
             for x in range(int(obj_size[0] / TILE_SIZE) + 1):
-                if self.get_type_of_surface((x + x_build_pos), (y + y_build_pos)) != GameWorld.GROUND:
+                if self.get_type_of_surface((x + x_build_pos), (y + y_build_pos)) != GROUND:
                     return False
         return True
 
@@ -66,19 +61,20 @@ class GameWorld:
         """get the type of the surface the mouse is currently on"""
         # it wont work well if the map size isn't like the map.txt file size (width and height)
         if x < 0 or x > MAP_WIDTH or y < 0 or y > MAP_HEIGHT:
-            return GameWorld.OUT
+            return OUT
         mouse_type = self._map.tile_map_data[y * (int(MAP_WIDTH / TILE_SIZE)) + x]
         if mouse_type == '.':
-            return GameWorld.WATER
+            return WATER
         elif mouse_type == '?':  # change this to on sprite
-            return GameWorld.OBJECT
+            return OBJECT
         elif mouse_type == '4':
-            return GameWorld.TREE
+            return TREE
         elif mouse_type == '5':
-            return GameWorld.STONE
+            return STONE
         elif self.UI_manager.get_ui() is not None:
-            return GameWorld.UI
-        return GameWorld.GROUND
+            return UI
+        return GROUND
+
 
     def load_data(self):
         """Load map data"""

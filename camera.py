@@ -4,7 +4,7 @@ from settings import *
 
 class Cam_values:
     def __init__(self):
-        self.tile_size = 0
+        self.tile_size = 1
         self.x = 0
         self.y = 0
 

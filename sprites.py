@@ -22,7 +22,7 @@ STONE_TYPE = 2
 
 
 class Sprite_manager:
-    def __init__(self, map, reactor):
+    def __init__(self, map, reactor,get_nearest_tile):
         self.walls = None
         self.all_sprites = None
         self.agents = []
@@ -40,7 +40,7 @@ class Sprite_manager:
 
         reactor.add_event_function(pg.MOUSEBUTTONDOWN, 1, "button", self.sprite_click)
         reactor.add_mouse_event(pg.MOUSEBUTTONUP, 1, "button", self.select_agents)
-        reactor.add_mouse_event(pg.MOUSEBUTTONDOWN, 1, "button", self.active_agents)
+        reactor.add_mouse_event(pg.MOUSEBUTTONDOWN, 1, "button", self.active_agents,get_nearest_tile)
 
     def add_resources(self,map):
         chance = 3000
@@ -89,8 +89,7 @@ class Sprite_manager:
         return stone
 
     def create_gather_man(self,x,y):
-        gather_man = _Gather_man([self.all_sprites,self.alive_sprites], x + random.randint(0, GATHER_HOUSE_SIZE[0] / 2),
-                    y
+        gather_man = _Gather_man([self.all_sprites,self.alive_sprites], x + random.randint(0, GATHER_HOUSE_SIZE[0] / 2),y
                     , 8, 8, GATHER_MAN, image_name="gather_man.png")
 
         self.agents.append(gather_man)
@@ -124,13 +123,15 @@ class Sprite_manager:
 
 
 
-    def active_agents(self,target_x,target_y):
+    def active_agents(self,target_x,target_y,get_nearest_tile):
         # change this once i have more groups
         for agent in self.selected_agents:
-            target_x = target_x / cam_values.tile_size - cam_values.x / cam_values.tile_size
-            target_y = target_y / cam_values.tile_size - cam_values.y / cam_values.tile_size
-            agent.start_pathfinding(self.squuzed_map, self.sprites_paths,(target_x,target_y))
-
+            x = target_x / cam_values.tile_size - cam_values.x / cam_values.tile_size
+            y = target_y / cam_values.tile_size - cam_values.y / cam_values.tile_size
+            new_x,new_y,surface = get_nearest_tile((x,y),WATER)
+            #if surface is not None:
+            agent.start_pathfinding(self.squuzed_map, self.sprites_paths,(new_x,new_y),surface)
+        self.selected_agents=[]
 
 class BasicObject(pg.sprite.Sprite):
     def __init__(self, groups, x, y, x_size, y_size, object_type, image_name=None, bg_color = None):
@@ -223,18 +224,21 @@ class __AliveSprite(__ClickAbleSprite):
 
 
 class __Agent(__AliveSprite):
-    def __init__(self, group, x, y, x_size, y_size, object_type, image_name=None):
+    def __init__(self, group, x, y, x_size, y_size, object_type,image_name=None):
         super().__init__(group, x, y, x_size, y_size, object_type, image_name)
         self.target_x = -1
         self.target_y = -1
         self.target_type ='' #what object is the agent is about to go to
         self.path = []
+        self.x_random = random.randint(-5,5)
+        self.y_random = random.randint(-5,5)
+
         self.block = None
 
-
-    def start_pathfinding(self, map, sprites_paths,target_pos):
+    def start_pathfinding(self, map, sprites_paths,target_pos,target_type):
         self.block = pathfinder.Block(int(self.current_x), int(self.current_y), 0, 0, None)
         self.target_x,self.target_y = target_pos
+        self.target_type = target_type
         self._timer = 0  # reset the timer in order to prevent big jumps at the start of the movment (because it a* pause the game for a few moment so the timer will grow and a big movment in agent will occur)
         t =  threading.Thread(target=self.pathfinding,args=(map,self.target_x,self.target_y,sprites_paths.copy()))
         t.start()
@@ -248,7 +252,10 @@ class __Agent(__AliveSprite):
             if self.path is not None and self.path != []:
                 count+=1
                 point_in_path = self.path.pop(0)
-                self.current_x, self.current_y = point_in_path
+                x, y = point_in_path
+                self.current_x = x + self.x_random
+                self.current_y = y + self.y_random
+
             self._timer -= 1 / self.speed
 
 
@@ -294,7 +301,7 @@ class _ArmyHouse(__ClickAbleSprite):
 
 class _Gather_man(__Agent):
     def __init__(self, group, x, y, x_size, y_size, object_type, image_name=None):
-        super().__init__(group, x, y, x_size, y_size, object_type, image_name)
+        super().__init__(group, x, y, x_size, y_size, object_type,image_name)
         self.target_y += GATHER_HOUSE_SIZE[1]
 
     def action(self):
