@@ -7,6 +7,7 @@ import utilities
 from sprites import Sprite_manager, BasicObject
 from camera import cam_values
 from Mouse_manager import Mouse
+import random
 
 BOUTTON = 10
 
@@ -26,18 +27,34 @@ class GameWorld:
         self.sprite_manager = Sprite_manager(self._map.tile_map_data, reactor,
                                              self._map.get_nearest_tile)
 
-        self.sprite_manager.add_resources(self._map)
-
         self.UI_manager = UI_manager(reactor, self.create_building_sprite)
+
+        self.add_resources()
+
 
         # reactor.add_mouse_event(pg.MOUSEBUTTONDOWN, 1, "button", self.get_type_of_surface,Mouse.CLICK_STATE,pg.mouse.get_pos()[0],pg.mouse.get_pos()[1])
         # reactor.add_event_function(pg.MOUSEBUTTONDOWN, 1, "button", self.get_type_of_surface,pg.mouse.get_pos()[0],pg.mouse.get_pos()[1])
 
 
-    def create_building_sprite(self, ui_menu_func, building_number=1):
+
+    def add_resources(self):
+        chance = 30
+        for index,block in enumerate(self._map.tile_map_data):
+            y=int(index/(SCREEN_WIDTH/TILE_SIZE))
+            x=int(index%(SCREEN_WIDTH/TILE_SIZE))
+            if self._map.data[y*TILE_SIZE][x*TILE_SIZE] == Map.FOREST_BLOCK:
+                if random.randint(1,chance) == 5:
+                    self.create_building_sprite(x*TILE_SIZE,y*TILE_SIZE,None,3)
+
+            elif self._map.data[y*TILE_SIZE][x*TILE_SIZE] == Map.GROUND_BLOCK:
+                if random.randint(1, chance) == 5:
+                    self.create_building_sprite(x*TILE_SIZE, y*TILE_SIZE,None,4)
+
+
+    def create_building_sprite(self, x,y , ui_menu_func, building_number=1):
         """create a static sprite on the map"""
-        x = int((pg.mouse.get_pos()[0] - cam_values.x) / (cam_values.tile_size * TILE_SIZE))
-        y = int((pg.mouse.get_pos()[1] - cam_values.y) / (cam_values.tile_size * TILE_SIZE))
+        x = int((x - cam_values.x) / (cam_values.tile_size * TILE_SIZE))
+        y = int((y - cam_values.y) / (cam_values.tile_size * TILE_SIZE))
 
         if building_number == 1:
             if self._can_build(x, y, GATHER_HOUSE_SIZE):
@@ -47,6 +64,14 @@ class GameWorld:
             if self._can_build(x, y, ARMY_HOUSE_SIZE):
                 self.sprite_manager.create_ArmyHouse(ui_menu_func, round(x) * TILE_SIZE, round(y) * TILE_SIZE)
                 self._map.change_map(x, y, ARMY_HOUSE_SIZE, '?')
+        elif building_number == 3:
+            if self._can_build(x, y, TREE_SIZE):
+                self.sprite_manager.create_Tree(round(x) * TILE_SIZE, round(y) * TILE_SIZE)
+                self._map.change_map(x, y, TREE_SIZE, '4')
+        elif building_number == 4:
+            if self._can_build(x, y, STONE_SIZE):
+                self.sprite_manager.create_Stone(round(x) * TILE_SIZE, round(y) * TILE_SIZE)
+                self._map.change_map(x, y, STONE_SIZE, '5')
 
 
     def _can_build(self, x_build_pos, y_build_pos, obj_size):
@@ -60,8 +85,9 @@ class GameWorld:
     def get_type_of_surface(self, x, y):
         """get the type of the surface the mouse is currently on"""
         # it wont work well if the map size isn't like the map.txt file size (width and height)
-        if x < 0 or x > MAP_WIDTH or y < 0 or y > MAP_HEIGHT:
+        if x < 0 or x >= MAP_WIDTH/TILE_SIZE or y < 0 or y >= MAP_HEIGHT/TILE_SIZE:
             return OUT
+        print(y , x,y * (int(MAP_WIDTH / TILE_SIZE)) + x)
         mouse_type = self._map.tile_map_data[y * (int(MAP_WIDTH / TILE_SIZE)) + x]
         if mouse_type == '.':
             return WATER
@@ -179,7 +205,7 @@ class UI_manager:
 
         _Button(self.canvases[IN_GAME_SCENE], 250, 600, LIGHTGREY, 300, 100, self.font, "Build GatherHouse", WHITE,
                 [lambda : change_cursor_func("tower.jpg",GATHER_HOUSE_SIZE[0],GATHER_HOUSE_SIZE[1]),
-                 lambda: reactor.add_event_function(pg.MOUSEBUTTONDOWN, 1, "button", create_GatherHouse_func,None,1,one_time=True)])
+                 lambda: reactor.add_mouse_event(pg.MOUSEBUTTONDOWN, 1, "button", create_GatherHouse_func,None,1,one_time=True)])
 
 
     def replace_scene(self, state=0):

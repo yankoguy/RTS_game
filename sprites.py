@@ -42,20 +42,6 @@ class Sprite_manager:
         reactor.add_mouse_event(pg.MOUSEBUTTONUP, 1, "button", self.select_agents)
         reactor.add_mouse_event(pg.MOUSEBUTTONDOWN, 1, "button", self.active_agents,get_nearest_tile)
 
-    def add_resources(self,map):
-        chance = 3000
-        for y,line in enumerate(map.data[:-20]):
-            for x,block in enumerate(line):
-                if block == Map.FOREST_BLOCK:
-                    if random.randint(1,chance) == 5:
-                        self.create_Tree(x,y)
-                        map.change_map(round(x/TILE_SIZE),round(y/TILE_SIZE),TREE_SIZE, '4')
-
-                if block == Map.GROUND_BLOCK:
-                    if random.randint(1, chance) == 5:
-                        self.create_Stone(x, y)
-                        map.change_map(round(x/TILE_SIZE),round(y/TILE_SIZE), STONE_SIZE,'5')
-
     def sprite_click(self):
         for clickable_sprite in self.clickable_sprites:
             if utilities.on_object(((pg.mouse.get_pos()[0] - cam_values.x) / cam_values.tile_size, (pg.mouse.get_pos()[1] - cam_values.y) / cam_values.tile_size),
@@ -129,8 +115,8 @@ class Sprite_manager:
             x = target_x / cam_values.tile_size - cam_values.x / cam_values.tile_size
             y = target_y / cam_values.tile_size - cam_values.y / cam_values.tile_size
             new_x,new_y,surface = get_nearest_tile((x,y),WATER)
-            #if surface is not None:
-            agent.start_pathfinding(self.squuzed_map, self.sprites_paths,(new_x,new_y),surface)
+            if surface is not None:
+                agent.start_pathfinding(self.squuzed_map, self.sprites_paths,(new_x,new_y),surface)
         self.selected_agents=[]
 
 class BasicObject(pg.sprite.Sprite):

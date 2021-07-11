@@ -77,9 +77,11 @@ class Map:
         for x in range(tiles_lenght):
             for y in range(tiles_lenght):
                 if self.tile_map_data[(pos[1]+y) * (int(MAP_WIDTH / TILE_SIZE)) + (pos[0]+x)] != tile_to_avoid:
+                    print((pos[0]+x)*TILE_SIZE, (pos[1]+y)*TILE_SIZE, self.tile_map_data[(pos[1]+y) * (int(MAP_WIDTH / TILE_SIZE)) + (pos[0]+x)])
                     return (pos[0]+x)*TILE_SIZE, (pos[1]+y)*TILE_SIZE, self.tile_map_data[(pos[1]+y) * (int(MAP_WIDTH / TILE_SIZE)) + (pos[0]+x)]
                 if self.tile_map_data[(pos[1]-y) * (int(MAP_WIDTH / TILE_SIZE)) + (pos[0]-x)] != tile_to_avoid:
-                    return (pos[0]-x) * TILE_SIZE, (pos[1]-y) * TILE_SIZE, self.tile_map_data[(pos[1]-y) * (int(MAP_WIDTH / TILE_SIZE)) + (pos[0]-x)]
+                    print((pos[0]-x)*TILE_SIZE, (pos[1]-y)*TILE_SIZE, self.tile_map_data[(pos[1]-y) * (int(MAP_WIDTH / TILE_SIZE)) + (pos[0]-x)])
+                    return (pos[0]-x)*TILE_SIZE, (pos[1]-y)*TILE_SIZE, self.tile_map_data[(pos[1]-y) * (int(MAP_WIDTH / TILE_SIZE)) + (pos[0]-x)]
 
         return 0,0,None
 

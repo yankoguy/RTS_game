@@ -62,15 +62,15 @@ def get_neighbordes(entity, target, counter, map):
 
 def search_in_incomple_paths(loop_counter, entity, incomple_paths):
     path = []
-    STOP_CHECKING = 1000  # if you didnt found after this number of iteration stop searching
-    ADDING_PATH_BORDER = 0  # if there are less iteration than this number dont add this path
+    STOP_CHECKING = 600  # if you didnt found after this number of iteration stop searching
+    ADDING_PATH_BORDER = 400  # if there are less iteration than this number dont add this path
     if loop_counter < STOP_CHECKING:
         for incomple_path in incomple_paths:
             for pos in incomple_path:
                 if pos == entity.pos:
                     # if found current pos find index of the pos in the list
                     index = incomple_path.index(pos)
-                    print("found", "path_index: ", incomple_paths.index(incomple_path), "place index: ", index)
+                   # print("found", "path_index: ", incomple_paths.index(incomple_path), "place index: ", index)
 
                     # start filling the path with the blocks you already walked
                     while entity.previously is not None:
@@ -110,7 +110,7 @@ def fill_space_between_chunks(path,current_pos,next_pos): #because of the tiles 
         else: #need to only change x:
             path.insert(0,(current_pos[0]+(i+1)*x_val,current_pos[1]))
 
-def a_star(map, entity, target, all_paths=None,time_to_stop = 0.3):
+def a_star(map, entity, target, all_paths=None,time_to_stop = 0.5):
     if all_paths is None:
         all_paths = []
 
@@ -141,10 +141,10 @@ def a_star(map, entity, target, all_paths=None,time_to_stop = 0.3):
 
             return path.copy()
 
-        path = search_in_incomple_paths(loop_counter, entity, all_paths)
-        if path is not None:
-            print(len(path))
-            return path.copy()
+       # path = search_in_incomple_paths(loop_counter, entity, all_paths)
+       # if path is not None:
+        #    print(len(path))
+         #   return path.copy()
 
         neighbordes = get_neighbordes(entity, target, entity.step_value,
                                       map)  # get all neightboards from -1 to 1 pos
