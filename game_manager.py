@@ -80,7 +80,7 @@ class Manager:
         self.renderer.render_objects(self.grafics_manager.UI_manager.current_scene,1)
         self.renderer.render_objects(self.grafics_manager.UI_manager.get_shown_menus(),1)
         self.renderer.render_objects([self.grafics_manager.UI_manager.cursor],2)
-
+        self.renderer.draw_lines()
         self.renderer.draw_square(self.my_mouse.start_selcet_area,self.my_mouse.end_selcet_area)
         pg.display.update()
 

@@ -9,9 +9,6 @@ from camera import cam_values
 from Mouse_manager import Mouse
 import random
 
-BOUTTON = 10
-
-SOME_RANDOM_VALUE = 101
 
 class GameWorld:
     """Controls UI , sprites, map and mouse (maybe i will change the mouse). His job is to draw everything to the screen"""
@@ -44,11 +41,11 @@ class GameWorld:
             x=int(index%(SCREEN_WIDTH/TILE_SIZE))
             if self._map.data[y*TILE_SIZE][x*TILE_SIZE] == Map.FOREST_BLOCK:
                 if random.randint(1,chance) == 5:
-                    self.create_building_sprite(x*TILE_SIZE,y*TILE_SIZE,None,3)
+                    self.create_building_sprite(x*TILE_SIZE,y*TILE_SIZE,None,TREE_TYPE)
 
             elif self._map.data[y*TILE_SIZE][x*TILE_SIZE] == Map.GROUND_BLOCK:
                 if random.randint(1, chance) == 5:
-                    self.create_building_sprite(x*TILE_SIZE, y*TILE_SIZE,None,4)
+                    self.create_building_sprite(x*TILE_SIZE, y*TILE_SIZE,None,STONE_TYPE)
 
 
     def create_building_sprite(self, x,y , ui_menu_func, building_number=1):
@@ -56,29 +53,29 @@ class GameWorld:
         x = int((x - cam_values.x) / (cam_values.tile_size * TILE_SIZE))
         y = int((y - cam_values.y) / (cam_values.tile_size * TILE_SIZE))
 
-        if building_number == 1:
+        if building_number == GATHEHOUSE_TYPE:
             if self._can_build(x, y, GATHER_HOUSE_SIZE):
                 self.sprite_manager.create_GatherHouse(ui_menu_func, round(x) * TILE_SIZE, round(y) * TILE_SIZE)
-                self._map.change_map(x, y, GATHER_HOUSE_SIZE, '?')
-        elif building_number == 2:
+                self._map.change_map(x, y, GATHER_HOUSE_SIZE, GATHER_HOUSE_MAP_SYMBOL)
+        elif building_number == ARMYHPUSE_TYPE:
             if self._can_build(x, y, ARMY_HOUSE_SIZE):
                 self.sprite_manager.create_ArmyHouse(ui_menu_func, round(x) * TILE_SIZE, round(y) * TILE_SIZE)
-                self._map.change_map(x, y, ARMY_HOUSE_SIZE, '?')
-        elif building_number == 3:
+                self._map.change_map(x, y, ARMY_HOUSE_SIZE, ARMY_HOUSE_MAP_SYMBOL)
+        elif building_number == TREE_TYPE:
             if self._can_build(x, y, TREE_SIZE):
                 self.sprite_manager.create_Tree(round(x) * TILE_SIZE, round(y) * TILE_SIZE)
-                self._map.change_map(x, y, TREE_SIZE, '4')
-        elif building_number == 4:
+                self._map.change_map(x, y, TREE_SIZE, TREE_MAP_SYMBOL)
+        elif building_number == STONE_TYPE:
             if self._can_build(x, y, STONE_SIZE):
                 self.sprite_manager.create_Stone(round(x) * TILE_SIZE, round(y) * TILE_SIZE)
-                self._map.change_map(x, y, STONE_SIZE, '5')
+                self._map.change_map(x, y, STONE_SIZE, STONE_MAP_SYMBOL)
 
 
     def _can_build(self, x_build_pos, y_build_pos, obj_size):
         """Check if building can build and will not be built on something else"""
         for y in range(int(obj_size[1] / TILE_SIZE) + 1):
             for x in range(int(obj_size[0] / TILE_SIZE) + 1):
-                if self.get_type_of_surface((x + x_build_pos), (y + y_build_pos)) != GROUND:
+                if self.get_type_of_surface((x + x_build_pos), (y + y_build_pos)) != GROUND_MAP_SYMBOL:
                     return False
         return True
 
@@ -87,19 +84,20 @@ class GameWorld:
         # it wont work well if the map size isn't like the map.txt file size (width and height)
         if x < 0 or x >= MAP_WIDTH/TILE_SIZE or y < 0 or y >= MAP_HEIGHT/TILE_SIZE:
             return OUT
-        print(y , x,y * (int(MAP_WIDTH / TILE_SIZE)) + x)
         mouse_type = self._map.tile_map_data[y * (int(MAP_WIDTH / TILE_SIZE)) + x]
-        if mouse_type == '.':
-            return WATER
-        elif mouse_type == '?':  # change this to on sprite
-            return OBJECT
-        elif mouse_type == '4':
-            return TREE
-        elif mouse_type == '5':
-            return STONE
+        if mouse_type == WATER_MAP_SYMBOL:
+            return WATER_MAP_SYMBOL
+        elif mouse_type == GATHER_HOUSE_MAP_SYMBOL:  # change this to on sprite
+            return GATHER_HOUSE_MAP_SYMBOL
+        elif mouse_type == ARMY_HOUSE_MAP_SYMBOL:
+            return ARMY_HOUSE_MAP_SYMBOL
+        elif mouse_type == TREE_MAP_SYMBOL:
+            return TREE_MAP_SYMBOL
+        elif mouse_type == STONE_MAP_SYMBOL:
+            return STONE_MAP_SYMBOL
         elif self.UI_manager.get_ui() is not None:
             return UI
-        return GROUND
+        return GROUND_MAP_SYMBOL
 
 
     def load_data(self):
@@ -126,7 +124,7 @@ class UI_manager:
 
 
         self.cursor = Cursor(None, pg.mouse.get_pos()[0], pg.mouse.get_pos()[1], 8, 8,
-                             SOME_RANDOM_VALUE, reactor,"tree.png")
+                             CURSOR_TYPE, reactor,"tree.png")
 
 
         #   self.create_menu()
@@ -134,7 +132,7 @@ class UI_manager:
         self.create_GatherHouse_ui(reactor, create_building_func,self.cursor.change_cursor_image)
 
         self.current_scene = self.canvases[OPENING_SCENE]
-        reactor.add_event_function(pg.MOUSEBUTTONDOWN, 1, "button", self.ui_click)
+        reactor.add_event_function(pg.MOUSEBUTTONDOWN, LEFT_CLICK, "button", self.ui_click)
 
 
     def get_shown_menus(self):
@@ -237,7 +235,7 @@ class Cursor(BasicObject):
 
 class _Button(BasicObject):
     def __init__(self, scene, x, y, bg_color, x_size, y_size, font, text, text_color, functions_to_activate):
-        super().__init__(scene, x, y, x_size, y_size, BOUTTON, image_name=None, bg_color=bg_color)
+        super().__init__(scene, x, y, x_size, y_size, BUTTON_TYPE, image_name=None, bg_color=bg_color)
         self.functions_to_activate = functions_to_activate
 
         self.text = font.render(text, 1, text_color)

@@ -75,11 +75,12 @@ class Sprite_manager:
         return stone
 
     def create_gather_man(self,x,y):
-        gather_man = _Gather_man([self.all_sprites,self.alive_sprites], x + random.randint(0, GATHER_HOUSE_SIZE[0] / 2),y
-                    , 8, 8, GATHER_MAN, image_name="gather_man.png")
+        for i in range(100):
+            gather_man = _Gather_man([self.all_sprites,self.alive_sprites], x + random.randint(0, GATHER_HOUSE_SIZE[0] / 2),y
+                        , 8, 8, GATHER_MAN, image_name="gather_man.png")
 
-        self.agents.append(gather_man)
-        self.clickable_sprites.append(gather_man)
+            self.agents.append(gather_man)
+            self.clickable_sprites.append(gather_man)
 
 
     def create_army_man(self):
@@ -114,7 +115,7 @@ class Sprite_manager:
         for agent in self.selected_agents:
             x = target_x / cam_values.tile_size - cam_values.x / cam_values.tile_size
             y = target_y / cam_values.tile_size - cam_values.y / cam_values.tile_size
-            new_x,new_y,surface = get_nearest_tile((x,y),WATER)
+            new_x,new_y,surface = get_nearest_tile((x,y),WATER_MAP_SYMBOL)
             if surface is not None:
                 agent.start_pathfinding(self.squuzed_map, self.sprites_paths,(new_x,new_y),surface)
         self.selected_agents=[]

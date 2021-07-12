@@ -2,11 +2,12 @@ import time
 from heapq import heapify, heappush, heappop
 from settings import TILE_SIZE,MAP_WIDTH,MAP_HEIGHT
 import numpy
+
 class Block:
     def __init__(self, x, y, step_value, value, previously, path_size=0):
         self.pos = (x, y)  # x is [0] y is [1]
         self.step_value = step_value
-        self.value = value - path_size *0
+        self.value = value - path_size * 8
         self.previously = previously
         self.path_size = path_size
 
@@ -22,7 +23,6 @@ class PathFinder:
     def __init__(self):
         self.incomplete_paths = []
 
-
 def get_distance(self_pos, target_pos):
     x_dis = abs(target_pos[0] - self_pos[0])
     y_dis = abs(target_pos[1] - self_pos[1])
@@ -37,12 +37,10 @@ def get_distance(self_pos, target_pos):
 
     return smaller_axis * 14 + (bigger_axis - smaller_axis) * 10
 
-
 def dis_to_next_block(entity_pos, next_block_pos):
     if abs(entity_pos[0] - next_block_pos[0]) == abs(entity_pos[1] - next_block_pos[1]):
         return 14
     return 10
-
 
 def get_neighbordes(entity, target, counter, map):
     neighbords = []
@@ -59,7 +57,7 @@ def get_neighbordes(entity, target, counter, map):
 
     return neighbords
 
-
+"""
 def search_in_incomple_paths(loop_counter, entity, incomple_paths):
     path = []
     STOP_CHECKING = 600  # if you didnt found after this number of iteration stop searching
@@ -87,7 +85,7 @@ def search_in_incomple_paths(loop_counter, entity, incomple_paths):
 
                     return path
     return None
-
+"""
 def fill_space_between_chunks(path,current_pos,next_pos): #because of the tiles the agent skips some pixels in his move so we fill them and that smooth the movment
     x,y = tuple(numpy.subtract(next_pos , current_pos))
 
@@ -101,7 +99,7 @@ def fill_space_between_chunks(path,current_pos,next_pos): #because of the tiles 
     else:
         y_val = -1
 
-    for i in range(TILE_SIZE-1):
+    for i in range(max(abs(current_pos[0]-next_pos[0]),abs(current_pos[1]-next_pos[1]))-1):
         if x != 0 and y !=0:
             path.insert(0,(current_pos[0]+(1+i)*x_val,current_pos[1]+(i+1)*y_val))
         elif x == 0: #need to only change y
@@ -110,26 +108,33 @@ def fill_space_between_chunks(path,current_pos,next_pos): #because of the tiles 
         else: #need to only change x:
             path.insert(0,(current_pos[0]+(i+1)*x_val,current_pos[1]))
 
-def a_star(map, entity, target, all_paths=None,time_to_stop = 0.5):
-    if all_paths is None:
-        all_paths = []
-
+def a_star(map, entity, target, all_paths=None,time_to_stop = 0.1):
     start_time = time.time()
     known_neighbers = []
     heapify(known_neighbers)
     open_set = set()
     loop_counter = 0  # how many runs it took to finish finding the path
-
-    entity.pos = (int(entity.pos[0] /TILE_SIZE) , int(entity.pos[1]/TILE_SIZE))
-
+    start_x = entity.pos[0]
+    start_y = entity.pos[1]
+    x,y = 0,0
     #print(
      #   f'self point : {entity.pos} target point : {target}, known_n_number : {len(known_neighbers)}')
-    target = (target[0] / TILE_SIZE,target[1]/TILE_SIZE)
+    if target[0] > entity.pos[0]:
+        x =1
+    elif target[0] < entity.pos[0]:
+        x=-1
+    if target[1] > entity.pos[1]:
+        y = 1
+    elif target[1] < entity.pos[1]:
+        y=-1
+    entity.pos = (int(entity.pos[0] /TILE_SIZE)+x , int(entity.pos[1]/TILE_SIZE)+y)
+
+    target = (int(target[0] / TILE_SIZE),int(target[1]/TILE_SIZE))
     while True:
         if time.time()-start_time > time_to_stop:
             print("stopped")
             return None
-        if entity.pos == (round(target[0]),round(target[1])): #round because the distance can be smaller than the Tile size
+        if entity.pos == (target[0],target[1]): #round because the distance can be smaller than the Tile size
             path = [(target[0] * TILE_SIZE,target[1]*TILE_SIZE)]
             while entity.previously is not None:
                 fill_space_between_chunks(path,(entity.pos[0] *TILE_SIZE , entity.pos[1] * TILE_SIZE),(entity.previously.pos[0] *TILE_SIZE , entity.previously.pos[1] * TILE_SIZE))
@@ -137,14 +142,11 @@ def a_star(map, entity, target, all_paths=None,time_to_stop = 0.5):
                 entity = entity.previously
                 path.insert(0, (entity.pos[0] *TILE_SIZE , entity.pos[1] * TILE_SIZE))
 
-            all_paths.insert(0, path)
+            fill_space_between_chunks(path, (entity.pos[0] * TILE_SIZE, entity.pos[1] * TILE_SIZE),
+                                      (start_x,start_y))
 
             return path.copy()
 
-       # path = search_in_incomple_paths(loop_counter, entity, all_paths)
-       # if path is not None:
-        #    print(len(path))
-         #   return path.copy()
 
         neighbordes = get_neighbordes(entity, target, entity.step_value,
                                       map)  # get all neightboards from -1 to 1 pos
@@ -153,12 +155,10 @@ def a_star(map, entity, target, all_paths=None,time_to_stop = 0.5):
             if n.pos not in open_set:
                 open_set.add(n.pos)
                 heappush(known_neighbers, n)  # add to the point list all the neighbords that are not blocked
-
         c_all = heappop(known_neighbers)  # get the closest of all neighbordes
+
 
         loop_counter += 1
         entity = c_all
 
 
-if __name__ == '__main__':
-    print(get_distance((0, 0), (122, 65456)))

@@ -71,16 +71,14 @@ class Map:
 
 
     def get_nearest_tile(self, pos, tile_to_avoid):
-        tiles_lenght = 4  # how many tiles can be between the end pos and the new pos
+        tiles_lenght = 5  # how many tiles can be between the end pos and the new pos
         pos = (int(pos[0]/TILE_SIZE),int(pos[1]/TILE_SIZE))
 
         for x in range(tiles_lenght):
             for y in range(tiles_lenght):
                 if self.tile_map_data[(pos[1]+y) * (int(MAP_WIDTH / TILE_SIZE)) + (pos[0]+x)] != tile_to_avoid:
-                    print((pos[0]+x)*TILE_SIZE, (pos[1]+y)*TILE_SIZE, self.tile_map_data[(pos[1]+y) * (int(MAP_WIDTH / TILE_SIZE)) + (pos[0]+x)])
                     return (pos[0]+x)*TILE_SIZE, (pos[1]+y)*TILE_SIZE, self.tile_map_data[(pos[1]+y) * (int(MAP_WIDTH / TILE_SIZE)) + (pos[0]+x)]
                 if self.tile_map_data[(pos[1]-y) * (int(MAP_WIDTH / TILE_SIZE)) + (pos[0]-x)] != tile_to_avoid:
-                    print((pos[0]-x)*TILE_SIZE, (pos[1]-y)*TILE_SIZE, self.tile_map_data[(pos[1]-y) * (int(MAP_WIDTH / TILE_SIZE)) + (pos[0]-x)])
                     return (pos[0]-x)*TILE_SIZE, (pos[1]-y)*TILE_SIZE, self.tile_map_data[(pos[1]-y) * (int(MAP_WIDTH / TILE_SIZE)) + (pos[0]-x)]
 
         return 0,0,None

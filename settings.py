@@ -1,11 +1,4 @@
 
-#if i am 1600 on 1000 screen - 50 FPS
-#if creating 3000 gatherHouses from 50 FPS down to 30 FPS
-
-
-
-
-
 
 
 
@@ -31,7 +24,7 @@ SCREEN_HEIGHT = 1000  # 16 * 48 or 32 * 24 or 64 * 12
 MAP_WIDTH = 1600
 MAP_HEIGHT = 1000
 FPS = 600
-TILE_SIZE = 10 #width and height
+TILE_SIZE = 20 #width and height
 TITLE = "GAME Demo"
 BGCOLOR = DARKGREY
 
@@ -46,6 +39,20 @@ LEFT_CLICK = 1
 
 GATHEHOUSE_TYPE = 1
 ARMYHPUSE_TYPE = 2
+BUTTON_TYPE = 3
+CURSOR_TYPE = 4
+TREE_TYPE = 5
+STONE_TYPE = 6
+
+
+UI = 2 #also symbol but not really in map
+OUT = 100 #also symbol but not really in map
+GROUND_MAP_SYMBOL = '1'
+WATER_MAP_SYMBOL = '.'
+GATHER_HOUSE_MAP_SYMBOL = 'g'
+ARMY_HOUSE_MAP_SYMBOL = 'a'
+TREE_MAP_SYMBOL = 't'
+STONE_MAP_SYMBOL = 's'
 
 GATHER_HOUSE_SIZE = (24,24)
 ARMY_HOUSE_SIZE = (16,16)
@@ -53,10 +60,3 @@ ARMY_HOUSE_SIZE = (16,16)
 TREE_SIZE = (16,16)
 STONE_SIZE = (16,16)
 
-GROUND = 0
-WATER = '.'
-UI = 2
-OBJECT = '?'
-TREE = '4'
-STONE = '5'
-OUT = 100
